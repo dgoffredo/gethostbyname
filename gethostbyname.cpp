@@ -4,6 +4,8 @@ extern "C" {
 } // extern "C"
 
 #include <algorithm>
+#include <cerrno>
+#include <cstring>
 #include <iostream>
 #include <string_view>
 
@@ -39,6 +41,11 @@ int main(int argc, char *argv[]) {
 
     char buffer[std::max(INET_ADDRSTRLEN, INET6_ADDRSTRLEN)];
     for (char **iter = host->h_addr_list; *iter; ++iter) {
-        std::cout << inet_ntop(host->h_addrtype, *iter, buffer, sizeof buffer) << '\n';
+        if (!inet_ntop(host->h_addrtype, *iter, buffer, sizeof buffer)) {
+            const int err = errno;
+            std::cerr << std::strerror(err) << '\n';
+        } else {
+            std::cout << buffer << '\n';
+        }
     }
 }
